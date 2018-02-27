@@ -54,7 +54,6 @@ const init = function () {
 }
 
 const render = function () {
-    console.log(vertices);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     gl.drawArrays(gl.LINE_LOOP, 0, 3);
