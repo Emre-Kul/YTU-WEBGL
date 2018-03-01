@@ -1,6 +1,7 @@
 let gl;
-let vertices = [];
+
 const TWIST_ANGLE = 30;
+
 const createTriangle = function (center, size) {
     let height = Math.sqrt(3) * size;
     return [
@@ -22,6 +23,40 @@ const twistWithoutTesselation = function (vec, center, twist) {//rotate defined
     return vec;
 }
 
+const twistWithTesselation = function(vec,center,twist){
+
+}
+
+const createScene = function () {
+    let vertices = [];
+    let twistedVertices = [];
+    let trLeftTop = createTriangle(vec2(-0.5, 0.5), 0.35);
+    vertices = vertices.concat(trLeftTop);
+    let trLeftBottom = twistWithoutTesselation(createTriangle(vec2(-0.5, -0.5), 0.35), vec2(-0.5, -0.5),TWIST_ANGLE);
+    twistedVertices = twistedVertices.concat(trLeftBottom);
+
+    let xI,yI,x, y, size, step,diff;
+    x = 0.5;
+    y = 0.8;
+    size = 0.03;
+    step = 10;
+    diff = 1;
+    for (xI = 0; xI < step; xI++) {
+        for (yI = 0; yI <= xI; yI++) {
+            vertices = vertices.concat(
+                createTriangle(vec2(x + 2 * size * yI, y), size)
+            );
+            twistedVertices = twistedVertices.concat(
+                twistWithoutTesselation(createTriangle(vec2(x + 2 * size * yI, y-diff), size),vec2(x + 2 * size * yI, y-diff),TWIST_ANGLE)
+            );
+        }
+        y -= size * Math.sqrt(3);
+        x -= size;
+    }
+    
+    return vertices.concat(twistedVertices);
+}
+
 const init = function () {
     const canvas = document.getElementById('gl-canvas');
 
@@ -35,11 +70,8 @@ const init = function () {
     const program = initShaders(gl, 'vertex-shader', 'fragment-shader');
     gl.useProgram(program);
 
-
-    let tr1 = createTriangle(vec2(-0.5, 0.5), 0.35);
-    let tr2 = twistWithoutTesselation(createTriangle(vec2(-0.5, -0.5), 0.35), vec2(-0.5, -0.5), TWIST_ANGLE);
-    vertices = vertices.concat(tr1).concat(tr2);
-
+    vertices = createScene();
+    
     // Load the data into the GPU
     const bufferId = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, bufferId);
@@ -50,14 +82,20 @@ const init = function () {
     gl.vertexAttribPointer(vPos, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPos);
 
-    render();
+    render(vertices.length);
 }
 
-const render = function () {
+const render = function (size) {
     gl.clear(gl.COLOR_BUFFER_BIT);
-
+    /*
     gl.drawArrays(gl.LINE_LOOP, 0, 3);
     gl.drawArrays(gl.TRIANGLE_FAN, 3, 3);
+    */
+    for (let i = 0; i < size/2; i += 3)
+        gl.drawArrays(gl.LINE_LOOP, i, 3);
+    for (let i = size/2; i < size; i += 3)
+        gl.drawArrays(gl.TRIANGLE_FAN, i, 3);
+
 
 }
 window.onload = init;
