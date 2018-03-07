@@ -1,7 +1,9 @@
+"use strict"
 let gl;
 
-const TWIST_ANGLE = 100;
+const TWIST_ANGLE = 120;
 const SQRT_3 = Math.sqrt(3);
+const RAD = Math.PI / 180;
 
 const createTriangle = function (center, size) {
     let height = SQRT_3 * size;
@@ -11,6 +13,7 @@ const createTriangle = function (center, size) {
         vec2(center[0] + size, center[1] - (height / 3.0))//right
     ];
 }
+
 const createReverseTriangle = function (center, size) {
     let height = SQRT_3 * size;
     return [
@@ -19,9 +22,10 @@ const createReverseTriangle = function (center, size) {
         vec2(center[0] + size, center[1] + (height * 2.0 / 3.0))//right
     ];
 }
+
 const twistWithoutTesselation = function (vec, center, twist) {//rotate defined
-    let mS = Math.sin(twist * Math.PI / 180.0);
-    let mC = Math.cos(twist * Math.PI / 180.0);
+    let mS = Math.sin(twist * RAD);
+    let mC = Math.cos(twist * RAD);
     let tmpVec, i;
     for (i = 0; i < vec.length; i++) {
         tmpVec = vec2(vec[i][0] - center[0], vec[i][1] - center[1]);
@@ -33,12 +37,7 @@ const twistWithoutTesselation = function (vec, center, twist) {//rotate defined
 }
 
 const twistWithTesselation = function (vec, center, twist) {
-    /*
-        xnew = x*cos(d*@)-y*sin(d*@)
-        ynew = x*sin(d*@)+y*cos(d*@)
-        distance = sqrt(x*x+y*y)
-    */
-    twist = twist * Math.PI / 180.0;
+    twist = twist * RAD;
     let i, tmpVec, mS, mC, distance;
 
     for (i = 0; i < vec.length; i++) {
@@ -50,6 +49,7 @@ const twistWithTesselation = function (vec, center, twist) {
         vec[i][1] = tmpVec[0] * mS + tmpVec[1] * mC;
         vec[i] = vec2(vec[i][0] + center[0], vec[i][1] + center[1]);
     }
+
     return vec;
 }
 
@@ -60,11 +60,12 @@ const createScene = function () {
     let trLeftBottom = twistWithoutTesselation(createTriangle(vec2(-0.5, -0.5), 0.35), vec2(-0.5, -0.5), TWIST_ANGLE);
     let xI, yI, x, y, size, step, diff, trRightBottomCenter;
     x = 0.5;
-    y = 0.9;
+    y = 0.865;
     size = 0.035;
     step = 10;
     diff = 1;
-    trRightBottomCenter = vec2(x, -0.55);
+    trRightBottomCenter = vec2(x,y-diff-(size*step*SQRT_3/2));
+    console.log(y-diff-(size*step*SQRT_3/2));
     for (xI = 0; xI < step * 2 - 1; xI += 2) {
         for (yI = 0; yI <= xI; yI++) {
             if (yI % 2 == 0) {
@@ -103,7 +104,7 @@ const init = function () {
     const program = initShaders(gl, 'vertex-shader', 'fragment-shader');
     gl.useProgram(program);
 
-    vertices = createScene();
+    let vertices = createScene();
 
     // Load the data into the GPU
     const bufferId = gl.createBuffer();
@@ -121,16 +122,10 @@ const init = function () {
 const render = function (size) {
     let i;
     gl.clear(gl.COLOR_BUFFER_BIT);
-    /*
-    gl.drawArrays(gl.LINE_LOOP, 0, 3);
-    gl.drawArrays(gl.TRIANGLE_FAN, 3, 3);
-    */
     for (i = 0; i < size / 2; i += 3)
         gl.drawArrays(gl.LINE_LOOP, i, 3);
 
     for (i = size / 2; i < size; i += 3)
         gl.drawArrays(gl.TRIANGLE_FAN, i, 3);
-
-
 }
 window.onload = init;
