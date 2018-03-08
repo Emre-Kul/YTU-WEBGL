@@ -1,7 +1,7 @@
 "use strict"
 let gl;
 
-const TWIST_ANGLE = 120;
+const TWIST_ANGLE = 190;
 const SQRT_3 = Math.sqrt(3);
 const RAD = Math.PI / 180;
 
@@ -64,8 +64,7 @@ const createScene = function () {
     size = 0.035;
     step = 10;
     diff = 1;
-    trRightBottomCenter = vec2(x,y-diff-(size*step*SQRT_3/2));
-    console.log(y-diff-(size*step*SQRT_3/2));
+    trRightBottomCenter = vec2(x,y-diff-(size*step*SQRT_3/2+size*SQRT_3*2/3));
     for (xI = 0; xI < step * 2 - 1; xI += 2) {
         for (yI = 0; yI <= xI; yI++) {
             if (yI % 2 == 0) {
