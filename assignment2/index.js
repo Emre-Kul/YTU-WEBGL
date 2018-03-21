@@ -1,5 +1,8 @@
 "use strict"
 let gl;
+let CUBE_ANGLE = 0;
+let MODEL_MTR_LOC;
+let VERTICES_LENGTH;
 
 const createGasket = function (center, size) {
 
@@ -34,7 +37,7 @@ const createCube = function (center, size) {
 }
 
 const createScene = function () {
-    let cube = createCube(vec3(-0.5, 0.0, 0.0), 0.3);
+    let cube = createCube(vec3(-0.5, -0.5, 0.0), 0.2);
     return cube;
 }
 
@@ -63,11 +66,23 @@ const init = function () {
     gl.vertexAttribPointer(vPos, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPos);
 
-    render(vertices.length);
+    MODEL_MTR_LOC = gl.getUniformLocation(program,"modelMtr"); 
+    VERTICES_LENGTH = vertices.length;
+
+    render();
 }
 
-const render = function (size) {
+const render = function () {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    gl.drawArrays(gl.TRIANGLES, 0, size);
+    
+    let cubeRotate = rotate(CUBE_ANGLE,[-11,3,0]);
+    
+    CUBE_ANGLE = (CUBE_ANGLE + 1)%360;
+    
+    gl.uniformMatrix4fv(MODEL_MTR_LOC,false,flatten(cubeRotate));
+    
+    gl.drawArrays(gl.TRIANGLES, 0, VERTICES_LENGTH);
+
+    requestAnimFrame( render );
 }
 window.onload = init;
