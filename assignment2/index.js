@@ -14,7 +14,7 @@ const SHAPE = {
         color: vec4(1.0, 0.0, 0.0, 1.0),
         vertPos: {
             start: 0,
-            1: 0
+            size: 0
         }
     },
     tetrahedron: {
@@ -24,7 +24,7 @@ const SHAPE = {
         color: vec4(1.0, 1.0, 0.0, 1.0),
         vertPos: {
             start: 0,
-            1: 0
+            size: 0
         }
     }
 }
