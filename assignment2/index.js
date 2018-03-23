@@ -9,20 +9,20 @@ const UNIFORM_LOCATION = {
 
 const SHAPE = {
     cube: {
-        translate: vec3(-0.5, 0.0, 0.0),
-        scale: vec3(0.15, 0.15, 0.15),
+        translate: vec3(-0.6, 0.0, 0.0),
+        scale: vec3(0.2, 0.2, 0.2),
         rotate: vec3(30, 0, 0),
-        color: vec4(0.0, 0.0, 1.0, 1.0),
+        color: vec4(1.0, 0.0, 0.0, 1.0),
         vertPos: {
             start: 0,
             1: 0
         }
     },
     tetrahedron: {
-        translate: vec3(0.5, 0.0, 0.0),
-        scale: vec3(0.15, 0.15, 0.15),
+        translate: vec3(0.6, 0.0, 0.0),
+        scale: vec3(0.2, 0.2, 0.2),
         rotate: vec3(30, 0, 0),
-        color: vec4(0.0, 1.0, 0.0, 1.0),
+        color: vec4(1.0, 1.0, 0.0, 1.0),
         vertPos: {
             start: 0,
             1: 0
@@ -110,7 +110,7 @@ const createScene = function () {
 const init = function () {
     let canvas = document.getElementById('gl-canvas');
 
-    canvas.addEventListener("mousedown", mouseClick);
+    canvas.addEventListener("mousedown", canvasClick);
 
     gl = WebGLUtils.setupWebGL(canvas, { preserveDrawingBuffer: true });
     if (!gl)
@@ -134,7 +134,7 @@ const init = function () {
     gl.vertexAttribPointer(vPos, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPos);
 
-    UNIFORM_LOCATION.model = gl.getUniformLocation(program, "modelMtr");
+    UNIFORM_LOCATION.model = gl.getUniformLocation(program, "uModel");
     UNIFORM_LOCATION.color = gl.getUniformLocation(program, 'uColor');
 
     render();
@@ -165,7 +165,7 @@ const render = function () {
     requestAnimFrame(render);
 }
 
-const mouseClick = function (e) {
+const canvasClick = function (e) {
     let mouseX = e.pageX - gl.canvas.offsetLeft;
     let mouseY = e.pageY - gl.canvas.offsetTop;
     let pixels = new Uint8Array(4);

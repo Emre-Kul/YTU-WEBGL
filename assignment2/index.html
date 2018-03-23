@@ -10,14 +10,14 @@
     <script id="vertex-shader" type="x-shader/x-vertex">
         attribute vec4 vPosition; 
 
-        uniform mat4 modelMtr;
+        uniform mat4 uModel;
         uniform vec4 uColor;
         
         varying vec4 vColor;
 
         void main() { 
             gl_PointSize = 1.0; 
-            gl_Position = modelMtr * vPosition; 
+            gl_Position = uModel * vPosition; 
             vColor = uColor;
             }
             
