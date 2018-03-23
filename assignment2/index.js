@@ -109,7 +109,7 @@ const createScene = function () {
 const init = function () {
     let canvas = document.getElementById('gl-canvas');
 
-    canvas.addEventListener("mousedown", canvasClick);
+    canvas.addEventListener("mousedown", detectShapeByClickEvent);
 
     gl = WebGLUtils.setupWebGL(canvas, { preserveDrawingBuffer: true });
     if (!gl)
@@ -164,7 +164,7 @@ const render = function () {
     requestAnimFrame(render);
 }
 
-const canvasClick = function (e) {
+const detectShapeByClickEvent = function (e) {
     let mouseX = e.pageX - gl.canvas.offsetLeft;
     let mouseY = e.pageY - gl.canvas.offsetTop;
     let pixels = new Uint8Array(4);
