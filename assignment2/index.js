@@ -12,6 +12,7 @@ const SHAPE = {
         translate: vec3(-0.5, 0.0, 0.0),
         scale: vec3(0.15, 0.15, 0.15),
         rotate: vec3(30, 0, 0),
+        color: vec4(0.0, 0.0, 1.0, 1.0),
         vertPos: {
             start: 0,
             1: 0
@@ -21,6 +22,7 @@ const SHAPE = {
         translate: vec3(0.5, 0.0, 0.0),
         scale: vec3(0.15, 0.15, 0.15),
         rotate: vec3(30, 0, 0),
+        color: vec4(0.0, 1.0, 0.0, 1.0),
         vertPos: {
             start: 0,
             1: 0
@@ -106,9 +108,11 @@ const createScene = function () {
 }
 
 const init = function () {
-    const canvas = document.getElementById('gl-canvas');
+    let canvas = document.getElementById('gl-canvas');
 
-    gl = WebGLUtils.setupWebGL(canvas);
+    canvas.addEventListener("mousedown", mouseClick);
+
+    gl = WebGLUtils.setupWebGL(canvas, { preserveDrawingBuffer: true });
     if (!gl)
         alert("Webgl isn't avaliable!");
 
@@ -143,21 +147,41 @@ const render = function () {
     //draw cube
     modelMtr = createModelMatrix(SHAPE.cube.translate, SHAPE.cube.scale, SHAPE.cube.rotate);
     gl.uniformMatrix4fv(UNIFORM_LOCATION.model, false, flatten(modelMtr));
-    gl.uniform4fv(UNIFORM_LOCATION.color, vec4(1.0, 0.0, 0.0, 1.0));
+    gl.uniform4fv(UNIFORM_LOCATION.color, SHAPE.cube.color);
     gl.drawArrays(gl.TRIANGLES, SHAPE.cube.vertPos.start, SHAPE.cube.vertPos.size);
 
     //draw tetrahedron
     modelMtr = createModelMatrix(SHAPE.tetrahedron.translate, SHAPE.tetrahedron.scale, SHAPE.tetrahedron.rotate);
     gl.uniformMatrix4fv(UNIFORM_LOCATION.model, false, flatten(modelMtr));
-    gl.uniform4fv(UNIFORM_LOCATION.color, vec4(0.0, 1.0, 0.0, 1.0));
+    gl.uniform4fv(UNIFORM_LOCATION.color, SHAPE.tetrahedron.color);
     gl.drawArrays(gl.TRIANGLES, SHAPE.tetrahedron.vertPos.start, SHAPE.tetrahedron.vertPos.size);
-    
+
     SHAPE.cube.rotate[1] += 1;
     SHAPE.cube.rotate[1] %= 360;
 
     SHAPE.tetrahedron.rotate[1] += 1;
     SHAPE.tetrahedron.rotate[1] += 360;
-    
+
     requestAnimFrame(render);
 }
+
+const mouseClick = function (e) {
+    let mouseX = e.pageX - gl.canvas.offsetLeft;
+    let mouseY = e.pageY - gl.canvas.offsetTop;
+    let pixels = new Uint8Array(4);
+    gl.readPixels(mouseX, gl.drawingBufferHeight - mouseY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    if (pixels[0] === SHAPE.cube.color[0] * 255 &&
+        pixels[1] === SHAPE.cube.color[1] * 255 &&
+        pixels[2] === SHAPE.cube.color[2] * 255) {
+        alert("Hi I am Cube");
+        console.log("Hi I am Cube");
+    }
+    else if (pixels[0] === SHAPE.tetrahedron.color[0] * 255 &&
+        pixels[1] === SHAPE.tetrahedron.color[1] * 255 &&
+        pixels[2] === SHAPE.tetrahedron.color[2] * 255) {
+        alert("Hi I am Tetrahedron!");
+        console.log("Hi I am Tetrahedron!");
+    }
+}
+
 window.onload = init;
