@@ -11,17 +11,24 @@
         attribute vec4 vPosition; 
 
         uniform mat4 modelMtr;
+        uniform vec4 uColor;
         
+        varying vec4 vColor;
+
         void main() { 
             gl_PointSize = 1.0; 
             gl_Position = modelMtr * vPosition; 
+            vColor = uColor;
             }
     </script>
 
     <script id="fragment-shader" type="x-shader/x-fragment">
-        precision mediump float; 
+        precision mediump float;
+        
+        varying vec4 vColor; 
+
         void main() { 
-            gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 ); 
+            gl_FragColor = vColor; 
             }
     </script>
 

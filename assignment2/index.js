@@ -1,10 +1,23 @@
 "use strict"
 let gl;
-let CUBE_ANGLE = 0;
-let MODEL_MTR_LOC;
-let VERTICES_LENGTH;
 
-const createGasket = function (center, size) {
+const ANGLE = {
+    x: -30,
+    y: 0,
+    z: 0 //useless
+};
+
+const UNIFORM_LOCATION = {
+    model: 0,
+    color: 0
+};
+
+const VERTICE_LENGTH = {
+    cube : 0,
+    tetrahedron : 0
+};
+
+const createTetrahedron = function (center, size) {
 
 }
 
@@ -36,9 +49,23 @@ const createCube = function (center, size) {
     return cubeVertices;
 }
 
+const specialRotate = function () {
+    let rotX, rotY;
+    rotX = rotateX(ANGLE.x);
+    rotY = rotateY(ANGLE.y);
+    ANGLE.y += 1;
+    ANGLE.y %= 360;
+    return mult(rotX, rotY);
+}
+
 const createScene = function () {
-    let cube = createCube(vec3(-0.5, -0.5, 0.0), 0.2);
-    return cube;
+    let cube = createCube(vec3(-0.5, 0.0, 0.0), 0.1);
+    let tetrahedron = createCube(vec3(0.5, 0.0, 0.0), 0.1);//will change
+    
+    VERTICE_LENGTH.cube = cube.length;
+    VERTICE_LENGTH.tetrahedron = tetrahedron.length;
+
+    return cube.concat(tetrahedron);
 }
 
 const init = function () {
@@ -66,23 +93,23 @@ const init = function () {
     gl.vertexAttribPointer(vPos, 4, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(vPos);
 
-    MODEL_MTR_LOC = gl.getUniformLocation(program,"modelMtr"); 
-    VERTICES_LENGTH = vertices.length;
+    UNIFORM_LOCATION.model = gl.getUniformLocation(program, "modelMtr");
+    UNIFORM_LOCATION.color = gl.getUniformLocation(program, 'uColor');
 
     render();
 }
 
 const render = function () {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    //rotate
+    gl.uniformMatrix4fv(UNIFORM_LOCATION.model, false, flatten(specialRotate()));
+    //draw cube
+    gl.uniform4fv(UNIFORM_LOCATION.color,vec4(1.0,0.0,0.0,1.0));
+    gl.drawArrays(gl.TRIANGLES, 0, VERTICE_LENGTH.cube);
+    //draw tetrahedron
+    gl.uniform4fv(UNIFORM_LOCATION.color,vec4(0.0,1.0,0.0,1.0));
+    gl.drawArrays(gl.TRIANGLES, VERTICE_LENGTH.cube, VERTICE_LENGTH.tetrahedron);
     
-    let cubeRotate = rotate(CUBE_ANGLE,[-11,3,0]);
-    
-    CUBE_ANGLE = (CUBE_ANGLE + 1)%360;
-    
-    gl.uniformMatrix4fv(MODEL_MTR_LOC,false,flatten(cubeRotate));
-    
-    gl.drawArrays(gl.TRIANGLES, 0, VERTICES_LENGTH);
-
-    requestAnimFrame( render );
+    requestAnimFrame(render);
 }
 window.onload = init;
