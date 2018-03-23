@@ -1,36 +1,64 @@
 "use strict"
 let gl;
 
-const ANGLE = {
-    x: -30,
-    y: 0,
-    z: 0 //useless
-};
-
+const ANGLE = vec3(30, 0, 0);
 const UNIFORM_LOCATION = {
     model: 0,
     color: 0
 };
 
-const VERTICE_LENGTH = {
-    cube : 0,
-    tetrahedron : 0
-};
-
-const createTetrahedron = function (center, size) {
-
+const SHAPE = {
+    cube: {
+        translate: vec3(-0.5, 0.0, 0.0),
+        scale: vec3(0.15, 0.15, 0.15),
+        rotate: vec3(30, 0, 0),
+        vertPos: {
+            start: 0,
+            1: 0
+        }
+    },
+    tetrahedron: {
+        translate: vec3(0.5, 0.0, 0.0),
+        scale: vec3(0.15, 0.15, 0.15),
+        rotate: vec3(30, 0, 0),
+        vertPos: {
+            start: 0,
+            1: 0
+        }
+    }
 }
 
-const createCube = function (center, size) {
+const createTetrahedron = function () {
+    let i, tetrahedronVertices = [];
+    const tetrahedronCords = [
+        vec4(1.0, 1.0, 1.0),//right top front
+        vec4(-1.0, -1.0, 1.0),//left bottom front
+        vec4(-1.0, 1.0, -1.0),//left top back
+        vec4(1.0, -1.0, -1.0)//right bottom back
+    ];
+    const tetrahedronIndices = [
+        0, 1, 2,
+        0, 2, 3,
+        0, 1, 3,
+        1, 2, 3
+    ];
+    for (i = 0; i < tetrahedronIndices.length; i++) {
+        tetrahedronVertices.push(tetrahedronCords[tetrahedronIndices[i]]);
+    }
+    return tetrahedronVertices;
+}
+
+const createCube = function () {
+    let i, cubeVertices = [];
     const cubeCords = [
-        vec4(center[0] - size, center[1] - size, center[2] + size, 1.0),
-        vec4(center[0] - size, center[1] + size, center[2] + size, 1.0),
-        vec4(center[0] + size, center[1] + size, center[2] + size, 1.0),
-        vec4(center[0] + size, center[1] - size, center[2] + size, 1.0),
-        vec4(center[0] - size, center[1] - size, center[2] - size, 1.0),
-        vec4(center[0] - size, center[1] + size, center[2] - size, 1.0),
-        vec4(center[0] + size, center[1] + size, center[2] - size, 1.0),
-        vec4(center[0] + size, center[1] - size, center[2] - size, 1.0)
+        vec4(-1, -1, 1, 1),
+        vec4(-1, 1, 1, 1),
+        vec4(1, 1, 1, 1),
+        vec4(1, -1, 1, 1),
+        vec4(-1, -1, -1, 1),
+        vec4(-1, 1, -1, 1),
+        vec4(1, 1, -1, 1),
+        vec4(1, -1, -1, 1)
     ];
     const cubeIndices = [
         //a, b, c, a, c, d
@@ -41,30 +69,39 @@ const createCube = function (center, size) {
         4, 5, 6, 4, 6, 7,
         5, 4, 0, 5, 0, 1
     ];
-    let i,
-        cubeVertices = [];
+
     for (i = 0; i < cubeIndices.length; ++i) {
         cubeVertices.push(cubeCords[cubeIndices[i]]);
     }
+
     return cubeVertices;
 }
 
-const specialRotate = function () {
-    let rotX, rotY;
-    rotX = rotateX(ANGLE.x);
-    rotY = rotateY(ANGLE.y);
-    ANGLE.y += 1;
-    ANGLE.y %= 360;
-    return mult(rotX, rotY);
+const createModelMatrix = function (t, s, r) {
+    let rotationMtr;
+    let translateMtr = translate(t);
+    let scaleMtr = scalem(s);
+
+    rotationMtr = rotate(r[0], vec3(1, 0, 0));
+    rotationMtr = mult(rotationMtr, rotate(r[1], vec3(0, 1, 0)));
+    rotationMtr = mult(rotationMtr, rotate(r[2], vec3(0, 0, 1)));//useless
+
+    return mult(rotationMtr, mult(translateMtr, scaleMtr));
 }
 
 const createScene = function () {
-    let cube = createCube(vec3(-0.5, 0.0, 0.0), 0.1);
-    let tetrahedron = createCube(vec3(0.5, 0.0, 0.0), 0.1);//will change
-    
-    VERTICE_LENGTH.cube = cube.length;
-    VERTICE_LENGTH.tetrahedron = tetrahedron.length;
+    let cube = createCube();
+    let tetrahedron = createTetrahedron();
 
+    SHAPE.cube.vertPos = {
+        start: 0,
+        size: cube.length
+    }
+
+    SHAPE.tetrahedron.vertPos = {
+        start: cube.length,
+        size: tetrahedron.length
+    }
     return cube.concat(tetrahedron);
 }
 
@@ -100,15 +137,26 @@ const init = function () {
 }
 
 const render = function () {
+    let modelMtr;
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    //rotate
-    gl.uniformMatrix4fv(UNIFORM_LOCATION.model, false, flatten(specialRotate()));
+
     //draw cube
-    gl.uniform4fv(UNIFORM_LOCATION.color,vec4(1.0,0.0,0.0,1.0));
-    gl.drawArrays(gl.TRIANGLES, 0, VERTICE_LENGTH.cube);
+    modelMtr = createModelMatrix(SHAPE.cube.translate, SHAPE.cube.scale, SHAPE.cube.rotate);
+    gl.uniformMatrix4fv(UNIFORM_LOCATION.model, false, flatten(modelMtr));
+    gl.uniform4fv(UNIFORM_LOCATION.color, vec4(1.0, 0.0, 0.0, 1.0));
+    gl.drawArrays(gl.TRIANGLES, SHAPE.cube.vertPos.start, SHAPE.cube.vertPos.size);
+
     //draw tetrahedron
-    gl.uniform4fv(UNIFORM_LOCATION.color,vec4(0.0,1.0,0.0,1.0));
-    gl.drawArrays(gl.TRIANGLES, VERTICE_LENGTH.cube, VERTICE_LENGTH.tetrahedron);
+    modelMtr = createModelMatrix(SHAPE.tetrahedron.translate, SHAPE.tetrahedron.scale, SHAPE.tetrahedron.rotate);
+    gl.uniformMatrix4fv(UNIFORM_LOCATION.model, false, flatten(modelMtr));
+    gl.uniform4fv(UNIFORM_LOCATION.color, vec4(0.0, 1.0, 0.0, 1.0));
+    gl.drawArrays(gl.TRIANGLES, SHAPE.tetrahedron.vertPos.start, SHAPE.tetrahedron.vertPos.size);
+    
+    SHAPE.cube.rotate[1] += 1;
+    SHAPE.cube.rotate[1] %= 360;
+
+    SHAPE.tetrahedron.rotate[1] += 1;
+    SHAPE.tetrahedron.rotate[1] += 360;
     
     requestAnimFrame(render);
 }
