@@ -1,7 +1,6 @@
 "use strict"
 let gl;
 
-const ANGLE = vec3(30, 0, 0);
 const UNIFORM_LOCATION = {
     model: 0,
     color: 0
